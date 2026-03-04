@@ -325,8 +325,8 @@ declare namespace Spicetify {
 						 */
 						container: HTMLElement;
 					};
-				}
-			) => void
+				},
+			) => void,
 		): void;
 		/**
 		 * Skip to previous track.
@@ -519,19 +519,8 @@ declare namespace Spicetify {
 		function put(url: string, body?: Body, headers?: Headers): Promise<Response["body"]>;
 		function del(url: string, body?: Body, headers?: Headers): Promise<Response["body"]>;
 		function patch(url: string, body?: Body, headers?: Headers): Promise<Response["body"]>;
-		function sub(
-			url: string,
-			callback: (b: Response["body"]) => void,
-			onError?: (e: Error) => void,
-			body?: Body,
-			headers?: Headers
-		): Promise<Response["body"]>;
-		function postSub(
-			url: string,
-			body: Body | null,
-			callback: (b: Response["body"]) => void,
-			onError?: (e: Error) => void
-		): Promise<Response["body"]>;
+		function sub(url: string, callback: (b: Response["body"]) => void, onError?: (e: Error) => void, body?: Body, headers?: Headers): Promise<Response["body"]>;
+		function postSub(url: string, body: Body | null, callback: (b: Response["body"]) => void, onError?: (e: Error) => void): Promise<Response["body"]>;
 		function request(method: Method, url: string, body?: Body, headers?: Headers): Promise<Response>;
 		function resolve(method: Method, url: string, body?: Body, headers?: Headers): Promise<Response>;
 	}
@@ -786,7 +775,18 @@ declare namespace Spicetify {
 	 * Contains vast array of internal APIs.
 	 * Please explore in Devtool Console.
 	 */
-	const Platform: any;
+	const Platform: {
+		PlaybackAPI: any;
+		History: {
+			push: (path: Location | string) => void;
+			replace: (path: Location | string) => void;
+			goBack: () => void;
+			goForward: () => void;
+			listen: (listener: (location: Location) => void) => () => void;
+			entries: Location[];
+			location: Location;
+		};
+	};
 	/**
 	 * Queue object contains list of queuing tracks,
 	 * history of played tracks and current track metadata.
@@ -1833,14 +1833,7 @@ declare namespace Spicetify {
 		 * Create a button on the right side of the playbar
 		 */
 		class Button {
-			constructor(
-				label: string,
-				icon: Icon | string,
-				onClick?: (self: Button) => void,
-				disabled?: boolean,
-				active?: boolean,
-				registerOnCreate?: boolean
-			);
+			constructor(label: string, icon: Icon | string, onClick?: (self: Button) => void, disabled?: boolean, active?: boolean, registerOnCreate?: boolean);
 			label: string;
 			icon: string;
 			onClick: (self: Button) => void;
@@ -1856,14 +1849,7 @@ declare namespace Spicetify {
 		 * Create a widget next to track info
 		 */
 		class Widget {
-			constructor(
-				label: string,
-				icon: Icon | string,
-				onClick?: (self: Widget) => void,
-				disabled?: boolean,
-				active?: boolean,
-				registerOnCreate?: boolean
-			);
+			constructor(label: string, icon: Icon | string, onClick?: (self: Widget) => void, disabled?: boolean, active?: boolean, registerOnCreate?: boolean);
 			label: string;
 			icon: string;
 			onClick: (self: Widget) => void;
@@ -2056,7 +2042,7 @@ declare namespace Spicetify {
 		 * @return Function to handle GraphQL queries
 		 */
 		function Handler(
-			context: Record<string, any>
+			context: Record<string, any>,
 		): (query: (typeof Definitions)[Query | string], variables?: Record<string, any>, context?: Record<string, any>) => Promise<any>;
 	}
 
@@ -2077,7 +2063,7 @@ declare namespace Spicetify {
 			label?: string,
 			contextUri?: string,
 			sectionIndex?: number,
-			dropOriginUri?: string
+			dropOriginUri?: string,
 		): (event: React.DragEvent, uris?: string[], label?: string, contextUri?: string, sectionIndex?: number) => void;
 
 		/**

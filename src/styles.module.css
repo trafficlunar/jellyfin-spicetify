@@ -1,0 +1,98 @@
+.button {
+	background-color: var(--spice-button);
+	color: var(--spice-text);
+	padding: 0.5rem 1rem;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	width: fit-content;
+}
+
+.hr {
+	flex-grow: 1;
+	border: none;
+	border-top: 1px solid var(--spice-button-disabled);
+}
+
+.modal {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.logged_in {
+	font-size: 1.25rem;
+	font-weight: 600;
+}
+
+.input_container {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.input_container label {
+	color: var(--spice-subtext);
+	margin-bottom: 0.25rem;
+}
+
+.input_container input,
+.quick_connect_box {
+	background-color: var(--spice-main-elevated);
+	color: var(--spice-text);
+	border: 1px solid var(--spice-card);
+	padding: 0.5rem 0.6rem;
+	font-size: 0.95rem;
+	transition: 200ms border-color;
+}
+
+.input_container input:focus,
+.quick_connect_box_active {
+	border-color: var(--spice-button);
+}
+
+.input_container input::placeholder {
+	color: var(--spice-subtext);
+	opacity: 0.5;
+}
+
+.separator {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: var(--spice-subtext);
+}
+
+.quick_connect {
+	background-color: var(--spice-main-elevated);
+}
+
+.quick_connect_wrapper {
+	position: relative;
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 0.25rem;
+	height: 3rem;
+}
+
+.quick_connect_input {
+	background-color: transparent !important;
+	border-color: transparent !important;
+	color: transparent !important;
+	position: absolute;
+	inset: 0;
+	z-index: 5;
+}
+
+.quick_connect_box {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 0.25rem;
+	font-size: 1.25rem;
+	font-weight: 500;
+}
