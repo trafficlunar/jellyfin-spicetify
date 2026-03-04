@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
-
+import { jellyfin, setJellyfinApi, setJellyfinUser } from "./app";
 import styles from "./styles.module.css";
-import { jellyfin, setJellyfinApi } from "./app";
 
 export default function SettingsModal() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [url, setUrl] = useState("");
+	const [url, setUrl] = useState(Spicetify.LocalStorage.get("jellyfin-url") || "");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [isUsingQuickConnect, setIsUsingQuickConnect] = useState(false);
@@ -24,23 +23,43 @@ export default function SettingsModal() {
 		const api = jellyfin.createApi(best.address);
 		const userApi = getUserApi(api);
 
-		const auth =
-			isUsingQuickConnect && quickConnectCode.toString().length === 6
-				? await userApi.authenticateWithQuickConnect({
-						quickConnectDto: { Secret: "111000" },
-					})
-				: await userApi.authenticateUserByName({
-						authenticateUserByName: { Username: username, Pw: password },
-					});
+		Spicetify.LocalStorage.set("jellyfin-url", url);
+		const savedToken = Spicetify.LocalStorage.get("jellyfin-token");
 
-		if (!auth.data.AccessToken) {
-			Spicetify.showNotification("Failed to login!", true);
-			return;
+		if (savedToken) {
+			api.accessToken = savedToken;
+		} else {
+			if (isUsingQuickConnect && quickConnectCode.length === 6) {
+				Spicetify.showNotification("Please enter the full quick connect code!", true);
+				return;
+			}
+
+			const auth = isUsingQuickConnect
+				? await userApi.authenticateWithQuickConnect({ quickConnectDto: { Secret: quickConnectCode } })
+				: await userApi.authenticateUserByName({ authenticateUserByName: { Username: username, Pw: password } });
+
+			if (!auth.data.AccessToken) {
+				Spicetify.showNotification("Failed to login!", true);
+				return;
+			}
+
+			api.accessToken = auth.data.AccessToken;
+			Spicetify.LocalStorage.set("jellyfin-token", auth.data.AccessToken);
+		}
+
+		const user = await getUserApi(api).getCurrentUser();
+		if (user.data.Id) {
+			setJellyfinUser(user.data.Id!);
+			Spicetify.LocalStorage.set("jellyfin-user", user.data.Id!);
 		}
 
 		setJellyfinApi(api);
 		setIsLoggedIn(true);
 	};
+
+	useEffect(() => {
+		if (Spicetify.LocalStorage.get("jellyfin-token")) login();
+	}, []);
 
 	if (isLoggedIn)
 		return (
@@ -91,6 +110,11 @@ export default function SettingsModal() {
 
 	return (
 		<div className={styles.modal}>
+			<div className={styles.input_container}>
+				<label htmlFor="url">URL</label>
+				<input id="url" type="text" placeholder="Enter Jellyfin URL..." value={url} onChange={(e) => setUrl(e.target.value)} />
+			</div>
+
 			{isUsingQuickConnect ? (
 				<div className={styles.input_container}>
 					<label htmlFor="code">Code</label>
@@ -128,11 +152,6 @@ export default function SettingsModal() {
 				</div>
 			) : (
 				<>
-					<div className={styles.input_container}>
-						<label htmlFor="url">URL</label>
-						<input id="url" type="text" placeholder="Enter Jellyfin URL..." value={url} onChange={(e) => setUrl(e.target.value)} />
-					</div>
-
 					<div className={styles.input_container}>
 						<label htmlFor="username">Username</label>
 						<input id="username" type="text" placeholder="Enter username..." value={username} onChange={(e) => setUsername(e.target.value)} />
