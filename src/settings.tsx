@@ -3,17 +3,16 @@ import React, { useEffect, useState } from "react";
 import { getQuickConnectApi } from "@jellyfin/sdk/lib/utils/api/quick-connect-api";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
 
-import { jellyfin, jellyfinApi, setJellyfinApi, setJellyfinUser } from "./app";
+import { jellyfin, jellyfinApi, jellyfinUser, setJellyfinApi, setJellyfinUser } from "./app";
 import styles from "./styles.module.css";
 
-type View = "url" | "password" | "quick-connect";
+type View = "url" | "password" | "quick-connect" | "settings";
 
 export default function SettingsModal() {
-	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [url, setUrl] = useState(Spicetify.LocalStorage.get("jellyfin-url") || "");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
-	const [view, setView] = useState<View>("url");
+	const [view, setView] = useState<View>(jellyfinUser ? "settings" : "url");
 	const [quickConnectCode, setQuickConnectCode] = useState("");
 
 	const createApi = async () => {
@@ -42,16 +41,18 @@ export default function SettingsModal() {
 			return;
 		}
 
-		jellyfinApi!.accessToken = auth.data.AccessToken;
+		jellyfinApi.accessToken = auth.data.AccessToken;
 		Spicetify.LocalStorage.set("jellyfin-token", auth.data.AccessToken);
 
-		const user = await getUserApi(jellyfinApi!).getCurrentUser();
-		if (user.data.Id) {
-			setJellyfinUser(user.data.Id!);
-			Spicetify.LocalStorage.set("jellyfin-user", user.data.Id!);
-		}
+		const user = await getUserApi(jellyfinApi).getCurrentUser();
+		if (user.data.Id) setJellyfinUser(user.data.Id);
 
-		setIsLoggedIn(true);
+		setView("settings");
+	};
+
+	const logout = () => {
+		Spicetify.LocalStorage.remove("jellyfin-token");
+		setView("url");
 	};
 
 	useEffect(() => {
@@ -93,12 +94,9 @@ export default function SettingsModal() {
 					Spicetify.LocalStorage.set("jellyfin-token", auth.data.AccessToken);
 
 					const user = await getUserApi(jellyfinApi!).getCurrentUser();
-					if (user.data.Id) {
-						setJellyfinUser(user.data.Id!);
-						Spicetify.LocalStorage.set("jellyfin-user", user.data.Id!);
-					}
+					if (user.data.Id) setJellyfinUser(user.data.Id);
 
-					setIsLoggedIn(true);
+					setView("settings");
 				} catch {
 					clearInterval(interval);
 					Spicetify.showNotification("Quick Connect polling failed!", true);
@@ -110,7 +108,7 @@ export default function SettingsModal() {
 		return () => clearInterval(interval);
 	}, [view]);
 
-	if (isLoggedIn)
+	if (view === "settings")
 		return (
 			<div className={styles.modal}>
 				<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 512 512">
@@ -151,13 +149,7 @@ export default function SettingsModal() {
 				</select>
 
 				<hr className={styles.hr} />
-				<button
-					onClick={() => {
-						setIsLoggedIn(false);
-						setView("url");
-					}}
-					className={styles.button}
-				>
+				<button onClick={logout} className={styles.button}>
 					Log out
 				</button>
 			</div>

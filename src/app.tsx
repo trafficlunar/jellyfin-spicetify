@@ -1,10 +1,9 @@
 import React from "react";
 import { Api, Jellyfin } from "@jellyfin/sdk";
+import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
 import { getSearchApi } from "@jellyfin/sdk/lib/utils/api/search-api";
 import { BaseItemKind } from "@jellyfin/sdk/lib/generated-client/models";
 import SettingsModal from "./settings";
-
-let hijackActive = false;
 
 export const jellyfin = new Jellyfin({
 	clientInfo: {
@@ -26,9 +25,29 @@ export const setJellyfinUser = (id: string) => {
 	jellyfinUser = id;
 };
 
+let hijackActive = false;
+
 async function main() {
 	while (!Spicetify.showNotification) {
 		await new Promise((resolve) => setTimeout(resolve, 100));
+	}
+
+	// Automatically login to Jellyfin if settings are present
+	const url = Spicetify.LocalStorage.get("jellyfin-url");
+	const token = Spicetify.LocalStorage.get("jellyfin-token");
+
+	if (url && token) {
+		const servers = await jellyfin.discovery.getRecommendedServerCandidates(url);
+		const best = jellyfin.discovery.findBestServer(servers);
+		if (!best) {
+			Spicetify.showNotification("Failed to connect to Jellyfin server!", true);
+			return;
+		}
+		jellyfinApi = jellyfin.createApi(best.address);
+		jellyfinApi.accessToken = token;
+
+		const user = await getUserApi(jellyfinApi).getCurrentUser();
+		if (user.data.Id) setJellyfinUser(user.data.Id);
 	}
 
 	const audio = new Audio();
