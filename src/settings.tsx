@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
+
+import { getQuickConnectApi } from "@jellyfin/sdk/lib/utils/api/quick-connect-api";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
-import { jellyfin, setJellyfinApi, setJellyfinUser } from "./app";
+
+import { jellyfin, jellyfinApi, setJellyfinApi, setJellyfinUser } from "./app";
 import styles from "./styles.module.css";
+
+type View = "url" | "password" | "quick-connect";
 
 export default function SettingsModal() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [url, setUrl] = useState(Spicetify.LocalStorage.get("jellyfin-url") || "");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
-	const [isUsingQuickConnect, setIsUsingQuickConnect] = useState(false);
+	const [view, setView] = useState<View>("url");
 	const [quickConnectCode, setQuickConnectCode] = useState("");
 
-	const [isFocused, setIsFocused] = useState(false);
-
-	const login = async () => {
+	const createApi = async () => {
 		const servers = await jellyfin.discovery.getRecommendedServerCandidates(url);
 		const best = jellyfin.discovery.findBestServer(servers);
 		if (!best) {
@@ -21,45 +24,91 @@ export default function SettingsModal() {
 			return;
 		}
 		const api = jellyfin.createApi(best.address);
-		const userApi = getUserApi(api);
 
 		Spicetify.LocalStorage.set("jellyfin-url", url);
-		const savedToken = Spicetify.LocalStorage.get("jellyfin-token");
 
-		if (savedToken) {
-			api.accessToken = savedToken;
-		} else {
-			if (isUsingQuickConnect && quickConnectCode.length === 6) {
-				Spicetify.showNotification("Please enter the full quick connect code!", true);
-				return;
-			}
+		setJellyfinApi(api);
+		setView("password");
+	};
 
-			const auth = isUsingQuickConnect
-				? await userApi.authenticateWithQuickConnect({ quickConnectDto: { Secret: quickConnectCode } })
-				: await userApi.authenticateUserByName({ authenticateUserByName: { Username: username, Pw: password } });
+	const login = async () => {
+		if (!jellyfinApi) return;
+		const userApi = getUserApi(jellyfinApi);
 
-			if (!auth.data.AccessToken) {
-				Spicetify.showNotification("Failed to login!", true);
-				return;
-			}
+		const auth = await userApi.authenticateUserByName({ authenticateUserByName: { Username: username, Pw: password } });
 
-			api.accessToken = auth.data.AccessToken;
-			Spicetify.LocalStorage.set("jellyfin-token", auth.data.AccessToken);
+		if (!auth.data.AccessToken) {
+			Spicetify.showNotification("Failed to login!", true);
+			return;
 		}
 
-		const user = await getUserApi(api).getCurrentUser();
+		jellyfinApi!.accessToken = auth.data.AccessToken;
+		Spicetify.LocalStorage.set("jellyfin-token", auth.data.AccessToken);
+
+		const user = await getUserApi(jellyfinApi!).getCurrentUser();
 		if (user.data.Id) {
 			setJellyfinUser(user.data.Id!);
 			Spicetify.LocalStorage.set("jellyfin-user", user.data.Id!);
 		}
 
-		setJellyfinApi(api);
 		setIsLoggedIn(true);
 	};
 
 	useEffect(() => {
-		if (Spicetify.LocalStorage.get("jellyfin-token")) login();
-	}, []);
+		if (view !== "quick-connect") return;
+		if (!jellyfinApi) return;
+
+		const quickConnectApi = getQuickConnectApi(jellyfinApi);
+		let interval: NodeJS.Timeout;
+
+		(async () => {
+			const enabled = await quickConnectApi.getQuickConnectEnabled();
+			if (!enabled.data) {
+				Spicetify.showNotification("Quick Connect is not enabled on this server!", true);
+				setView("password");
+				return;
+			}
+
+			const init = await quickConnectApi.initiateQuickConnect();
+			const secret = init.data.Secret!;
+			setQuickConnectCode(init.data.Code!);
+
+			interval = setInterval(async () => {
+				try {
+					const state = await quickConnectApi.getQuickConnectState({ secret });
+					if (!state.data.Authenticated) return;
+
+					clearInterval(interval);
+
+					const auth = await getUserApi(jellyfinApi!).authenticateWithQuickConnect({
+						quickConnectDto: { Secret: secret },
+					});
+
+					if (!auth.data.AccessToken) {
+						Spicetify.showNotification("Failed to login with Quick Connect!", true);
+						return;
+					}
+
+					jellyfinApi!.accessToken = auth.data.AccessToken;
+					Spicetify.LocalStorage.set("jellyfin-token", auth.data.AccessToken);
+
+					const user = await getUserApi(jellyfinApi!).getCurrentUser();
+					if (user.data.Id) {
+						setJellyfinUser(user.data.Id!);
+						Spicetify.LocalStorage.set("jellyfin-user", user.data.Id!);
+					}
+
+					setIsLoggedIn(true);
+				} catch {
+					clearInterval(interval);
+					Spicetify.showNotification("Quick Connect polling failed!", true);
+					setView("password");
+				}
+			}, 2000);
+		})();
+
+		return () => clearInterval(interval);
+	}, [view]);
 
 	if (isLoggedIn)
 		return (
@@ -101,50 +150,43 @@ export default function SettingsModal() {
 					<option value="">Source</option>
 				</select>
 
-				<hr style={{ width: "100%", margin: "1rem 0" }} className={styles.hr} />
-				<button onClick={() => setIsLoggedIn(false)} className={styles.button}>
+				<hr className={styles.hr} />
+				<button
+					onClick={() => {
+						setIsLoggedIn(false);
+						setView("url");
+					}}
+					className={styles.button}
+				>
 					Log out
+				</button>
+			</div>
+		);
+
+	if (view === "url")
+		return (
+			<div className={styles.modal}>
+				<div className={styles.inputContainer}>
+					<label htmlFor="url">URL</label>
+					<input id="url" type="text" placeholder="Enter Jellyfin URL..." value={url} onChange={(e) => setUrl(e.target.value)} />
+				</div>
+
+				<hr className={styles.hr} />
+				<button onClick={createApi} className={styles.button}>
+					Next
 				</button>
 			</div>
 		);
 
 	return (
 		<div className={styles.modal}>
-			<div className={styles.inputContainer}>
-				<label htmlFor="url">URL</label>
-				<input id="url" type="text" placeholder="Enter Jellyfin URL..." value={url} onChange={(e) => setUrl(e.target.value)} />
-			</div>
-
-			{isUsingQuickConnect ? (
+			{view === "quick-connect" ? (
 				<div className={styles.inputContainer}>
 					<label htmlFor="code">Code</label>
 
 					<div className={styles.quickConnectWrapper}>
-						<input
-							id="quick-connect"
-							type="text"
-							inputMode="numeric"
-							maxLength={6}
-							value={quickConnectCode!}
-							onChange={(e) => setQuickConnectCode(e.target.value.replace(/\D/g, ""))}
-							onFocus={() => setIsFocused(true)}
-							onBlur={() => setIsFocused(false)}
-							// Force caret to always be at the end
-							onKeyDown={(e) => {
-								if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) {
-									e.preventDefault();
-								}
-							}}
-							// Same here
-							onSelect={(e) => {
-								const element = e.target as HTMLInputElement;
-								element.setSelectionRange(element.value.length, element.value.length);
-							}}
-							className={styles.quickConnectInput}
-						/>
-
 						{Array.from({ length: 6 }).map((_, i) => (
-							<div key={i} className={`${styles.quickConnectBox} ${isFocused && quickConnectCode.length === i ? styles.quickConnectBoxActive : ""}`}>
+							<div key={i} className={styles.quickConnectBox}>
 								{quickConnectCode[i]}
 							</div>
 						))}
@@ -161,31 +203,19 @@ export default function SettingsModal() {
 						<label htmlFor="password">Password</label>
 						<input id="password" type="password" placeholder="Enter password..." value={password} onChange={(e) => setPassword(e.target.value)} />
 					</div>
+
+					<button onClick={login} className={styles.button}>
+						Log in
+					</button>
 				</>
 			)}
 
-			<div className={styles.separator}>
-				<hr className={styles.hr} />
-				<span>or</span>
-				<hr className={styles.hr} />
-			</div>
-
-			<button
-				onClick={() => {
-					setIsUsingQuickConnect((prev) => {
-						if (!prev) {
-							document.getElementById("quick-connect")?.focus();
-						}
-
-						return !prev;
-					});
-				}}
-				className={`${styles.quickConnect} ${styles.button}`}
-			>
-				{isUsingQuickConnect ? "Username/Password" : "Quick Connect"}
+			<hr className={styles.hr} />
+			<button onClick={() => setView((prev) => (prev === "password" ? "quick-connect" : "password"))} className={`${styles.quickConnect} ${styles.button}`}>
+				{view === "password" ? "Quick Connect" : "Username/Password"}
 			</button>
-			<button onClick={login} className={styles.button}>
-				Submit
+			<button onClick={() => setView("url")} className={styles.button}>
+				Change URL
 			</button>
 		</div>
 	);

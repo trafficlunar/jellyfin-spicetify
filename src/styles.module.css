@@ -9,9 +9,10 @@
 }
 
 .hr {
-	flex-grow: 1;
 	border: none;
 	border-top: 1px solid var(--spice-button-disabled);
+	width: 100%;
+	margin: 0.5rem 0;
 }
 
 .modal {
@@ -47,8 +48,7 @@
 	transition: 200ms border-color;
 }
 
-.inputContainer input:focus,
-.quickConnectBoxActive {
+.inputContainer input:focus {
 	border-color: var(--spice-button);
 }
 
