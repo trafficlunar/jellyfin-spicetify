@@ -95,14 +95,14 @@ export default function SettingsModal() {
 						d="M434.834 62.776c0 6.012-4.874 10.885-10.885 10.885s-10.885-4.873-10.885-10.885s4.873-10.885 10.885-10.885c6.012-.001 10.885 4.873 10.885 10.885M46.324 11.894c-6.012 0-10.885 4.873-10.885 10.885s4.873 10.885 10.885 10.885S57.21 28.791 57.21 22.779s-4.874-10.885-10.886-10.885m170.681 142.057c1.231-2.414 2.749-5.163 4.356-8.073c8.154-14.771 19.32-34.999 19.992-58.559c.807-28.304-13.934-54.002-43.812-76.38c-5.187-3.885-12.539-2.828-16.421 2.357c-3.884 5.186-2.829 12.538 2.357 16.421c23.75 17.788 35.01 36.411 34.425 56.933c-.51 17.872-9.697 34.516-17.08 47.889c-1.701 3.083-3.309 5.994-4.713 8.747c-2.945 5.771-.654 12.836 5.116 15.781a11.7 11.7 0 0 0 5.323 1.285a11.73 11.73 0 0 0 10.457-6.401"
 					/>
 				</svg>
-				<p className={styles.logged_in}>You're logged in!</p>
+				<p className={styles.loggedIn}>You're logged in!</p>
 
 				<select name="" id="">
 					<option value="">Source</option>
 				</select>
 
 				<hr style={{ width: "100%", margin: "1rem 0" }} className={styles.hr} />
-				<button onClick={() => setIsLoggedIn(false)} className={styles.submit}>
+				<button onClick={() => setIsLoggedIn(false)} className={styles.button}>
 					Log out
 				</button>
 			</div>
@@ -110,16 +110,16 @@ export default function SettingsModal() {
 
 	return (
 		<div className={styles.modal}>
-			<div className={styles.input_container}>
+			<div className={styles.inputContainer}>
 				<label htmlFor="url">URL</label>
 				<input id="url" type="text" placeholder="Enter Jellyfin URL..." value={url} onChange={(e) => setUrl(e.target.value)} />
 			</div>
 
 			{isUsingQuickConnect ? (
-				<div className={styles.input_container}>
+				<div className={styles.inputContainer}>
 					<label htmlFor="code">Code</label>
 
-					<div className={styles.quick_connect_wrapper}>
+					<div className={styles.quickConnectWrapper}>
 						<input
 							id="quick-connect"
 							type="text"
@@ -140,11 +140,11 @@ export default function SettingsModal() {
 								const element = e.target as HTMLInputElement;
 								element.setSelectionRange(element.value.length, element.value.length);
 							}}
-							className={styles.quick_connect_input}
+							className={styles.quickConnectInput}
 						/>
 
 						{Array.from({ length: 6 }).map((_, i) => (
-							<div key={i} className={`${styles.quick_connect_box} ${isFocused && quickConnectCode.length === i ? styles.quick_connect_box_active : ""}`}>
+							<div key={i} className={`${styles.quickConnectBox} ${isFocused && quickConnectCode.length === i ? styles.quickConnectBoxActive : ""}`}>
 								{quickConnectCode[i]}
 							</div>
 						))}
@@ -152,12 +152,12 @@ export default function SettingsModal() {
 				</div>
 			) : (
 				<>
-					<div className={styles.input_container}>
+					<div className={styles.inputContainer}>
 						<label htmlFor="username">Username</label>
 						<input id="username" type="text" placeholder="Enter username..." value={username} onChange={(e) => setUsername(e.target.value)} />
 					</div>
 
-					<div className={styles.input_container}>
+					<div className={styles.inputContainer}>
 						<label htmlFor="password">Password</label>
 						<input id="password" type="password" placeholder="Enter password..." value={password} onChange={(e) => setPassword(e.target.value)} />
 					</div>
@@ -180,7 +180,7 @@ export default function SettingsModal() {
 						return !prev;
 					});
 				}}
-				className={`${styles.quick_connect} ${styles.button}`}
+				className={`${styles.quickConnect} ${styles.button}`}
 			>
 				{isUsingQuickConnect ? "Username/Password" : "Quick Connect"}
 			</button>

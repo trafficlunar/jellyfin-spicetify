@@ -21,24 +21,24 @@
 	gap: 0.5rem;
 }
 
-.logged_in {
+.loggedIn {
 	font-size: 1.25rem;
 	font-weight: 600;
 }
 
-.input_container {
+.inputContainer {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 }
 
-.input_container label {
+.inputContainer label {
 	color: var(--spice-subtext);
 	margin-bottom: 0.25rem;
 }
 
-.input_container input,
-.quick_connect_box {
+.inputContainer input,
+.quickConnectBox {
 	background-color: var(--spice-main-elevated);
 	color: var(--spice-text);
 	border: 1px solid var(--spice-card);
@@ -47,12 +47,12 @@
 	transition: 200ms border-color;
 }
 
-.input_container input:focus,
-.quick_connect_box_active {
+.inputContainer input:focus,
+.quickConnectBoxActive {
 	border-color: var(--spice-button);
 }
 
-.input_container input::placeholder {
+.inputContainer input::placeholder {
 	color: var(--spice-subtext);
 	opacity: 0.5;
 }
@@ -69,15 +69,15 @@
 	background-color: var(--spice-main-elevated);
 }
 
-.quick_connect_wrapper {
+.quickConnectWrapper {
 	position: relative;
 	display: grid;
 	grid-template-columns: repeat(6, 1fr);
 	gap: 0.25rem;
-	height: 3rem;
+	height: 2.5rem;
 }
 
-.quick_connect_input {
+.quickConnectInput {
 	background-color: transparent !important;
 	border-color: transparent !important;
 	color: transparent !important;
@@ -86,7 +86,7 @@
 	z-index: 5;
 }
 
-.quick_connect_box {
+.quickConnectBox {
 	width: 100%;
 	height: 100%;
 	display: flex;
@@ -95,4 +95,5 @@
 	border-radius: 0.25rem;
 	font-size: 1.25rem;
 	font-weight: 500;
+	padding: 0;
 }

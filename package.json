@@ -2,16 +2,19 @@
   "name": "jellyfin-spicetify",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "spicetify-creator",
-    "build-local": "spicetify-creator --out=dist --minify",
-    "watch": "spicetify-creator --watch"
+    "build": "bun build.ts",
+    "build-local": "bun build.ts --local",
+    "watch": "bun build.ts --watch & spicetify watch -le"
   },
   "license": "MIT",
   "devDependencies": {
+    "@types/node": "^25.3.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "spicetify-creator": "^1.0.17"
+    "esbuild": "^0.27.3",
+    "esbuild-css-modules-plugin": "^3.1.5"
   },
   "dependencies": {
     "@jellyfin/sdk": "^0.13.0"
