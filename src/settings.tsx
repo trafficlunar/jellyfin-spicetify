@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { getQuickConnectApi } from "@jellyfin/sdk/lib/utils/api/quick-connect-api";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
 
-import { jellyfin, jellyfinApi, jellyfinUser, setJellyfinApi, setJellyfinUser } from "./app";
+import * as jellyfin from "./jellyfin";
 import styles from "./styles.module.css";
 
 type View = "url" | "password" | "quick-connect" | "settings";
@@ -12,27 +12,27 @@ export default function SettingsModal() {
 	const [url, setUrl] = useState(Spicetify.LocalStorage.get("jellyfin-url") || "");
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
-	const [view, setView] = useState<View>(jellyfinUser ? "settings" : "url");
+	const [view, setView] = useState<View>(jellyfin.user ? "settings" : "url");
 	const [quickConnectCode, setQuickConnectCode] = useState("");
 
 	const createApi = async () => {
-		const servers = await jellyfin.discovery.getRecommendedServerCandidates(url);
-		const best = jellyfin.discovery.findBestServer(servers);
+		const servers = await jellyfin.sdk.discovery.getRecommendedServerCandidates(url);
+		const best = jellyfin.sdk.discovery.findBestServer(servers);
 		if (!best) {
 			Spicetify.showNotification("Failed to connect to server!", true);
 			return;
 		}
-		const api = jellyfin.createApi(best.address);
+		const api = jellyfin.sdk.createApi(best.address);
 
 		Spicetify.LocalStorage.set("jellyfin-url", url);
 
-		setJellyfinApi(api);
+		jellyfin.setApi(api);
 		setView("password");
 	};
 
 	const login = async () => {
-		if (!jellyfinApi) return;
-		const userApi = getUserApi(jellyfinApi);
+		if (!jellyfin.api) return;
+		const userApi = getUserApi(jellyfin.api);
 
 		const auth = await userApi.authenticateUserByName({ authenticateUserByName: { Username: username, Pw: password } });
 
@@ -41,11 +41,11 @@ export default function SettingsModal() {
 			return;
 		}
 
-		jellyfinApi.accessToken = auth.data.AccessToken;
+		jellyfin.api.accessToken = auth.data.AccessToken;
 		Spicetify.LocalStorage.set("jellyfin-token", auth.data.AccessToken);
 
-		const user = await getUserApi(jellyfinApi).getCurrentUser();
-		if (user.data.Id) setJellyfinUser(user.data.Id);
+		const user = await getUserApi(jellyfin.api).getCurrentUser();
+		if (user.data.Id) jellyfin.setUser(user.data.Id);
 
 		setView("settings");
 	};
@@ -57,9 +57,9 @@ export default function SettingsModal() {
 
 	useEffect(() => {
 		if (view !== "quick-connect") return;
-		if (!jellyfinApi) return;
+		if (!jellyfin.api) return;
 
-		const quickConnectApi = getQuickConnectApi(jellyfinApi);
+		const quickConnectApi = getQuickConnectApi(jellyfin.api);
 		let interval: NodeJS.Timeout;
 
 		(async () => {
@@ -81,7 +81,7 @@ export default function SettingsModal() {
 
 					clearInterval(interval);
 
-					const auth = await getUserApi(jellyfinApi!).authenticateWithQuickConnect({
+					const auth = await getUserApi(jellyfin.api!).authenticateWithQuickConnect({
 						quickConnectDto: { Secret: secret },
 					});
 
@@ -90,11 +90,11 @@ export default function SettingsModal() {
 						return;
 					}
 
-					jellyfinApi!.accessToken = auth.data.AccessToken;
+					jellyfin.api!.accessToken = auth.data.AccessToken;
 					Spicetify.LocalStorage.set("jellyfin-token", auth.data.AccessToken);
 
-					const user = await getUserApi(jellyfinApi!).getCurrentUser();
-					if (user.data.Id) setJellyfinUser(user.data.Id);
+					const user = await getUserApi(jellyfin.api!).getCurrentUser();
+					if (user.data.Id) jellyfin.setUser(user.data.Id);
 
 					setView("settings");
 				} catch {

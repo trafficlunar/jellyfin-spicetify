@@ -9,7 +9,7 @@ const isLocal = process.argv.includes("--local");
 const isWatch = process.argv.includes("--watch");
 
 const options: BuildOptions = {
-	entryPoints: ["src/app.tsx"],
+	entryPoints: ["src/main.ts"],
 	outfile: "./dist/jellyfin-spicetify.js",
 	bundle: true,
 	minify: isLocal,

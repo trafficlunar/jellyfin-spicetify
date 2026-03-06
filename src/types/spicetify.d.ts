@@ -777,6 +777,15 @@ declare namespace Spicetify {
 	 */
 	const Platform: {
 		PlaybackAPI: any;
+		History: {
+			push: (path: Location | string) => void;
+			replace: (path: Location | string) => void;
+			goBack: () => void;
+			goForward: () => void;
+			listen: (listener: (location: Location) => void) => () => void;
+			entries: Location[];
+			location: Location;
+		};
 	};
 	/**
 	 * Queue object contains list of queuing tracks,
