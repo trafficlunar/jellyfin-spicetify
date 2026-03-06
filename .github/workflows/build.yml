@@ -13,3 +13,4 @@ jobs:
         with:
           name: jellyfin-spicetify
           path: dist/jellyfin-spicetify.js
+          archive: false
