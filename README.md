@@ -1,3 +1,3 @@
 # jellyfin-spicetify
 
-Spicetify plugin to use Spotify along with your Jellyfin library
+WIP: A Spicetify extension to integrate your Jellyfin music library into Spotify

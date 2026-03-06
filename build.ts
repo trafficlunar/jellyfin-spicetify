@@ -36,7 +36,9 @@ const options: BuildOptions = {
 					const js = readFileSync("./dist/jellyfin-spicetify.js", "utf-8");
 					const css = readFileSync("./dist/jellyfin-spicetify.css", "utf-8");
 
-					const wrapped = `(async function() {
+					const wrapped = `
+					// https://github.com/trafficlunar/jellyfin-spicetify
+					(async function() {
 						while (!Spicetify.React || !Spicetify.ReactDOM) {
 							await new Promise(resolve => setTimeout(resolve, 10));
 						}
