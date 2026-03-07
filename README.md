@@ -18,6 +18,6 @@ WIP: A Spicetify extension to integrate your Jellyfin music library into Spotify
 
 The following are current limitations with the extension. They are not impossible to implement, but are rather time-consuming or require fragile solutions.
 
-- Non-Spotify tracks
+### Non-Spotify tracks
 
 Tracks that don't exist on Spotify can't be included in playlists, queue, etc. They can only be accessed via search and don't show up on the player interface.

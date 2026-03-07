@@ -1,99 +1,104 @@
 .button {
-	background-color: var(--spice-button);
-	color: var(--spice-text);
-	padding: 0.5rem 1rem;
-	border: none;
-	outline: none;
-	cursor: pointer;
-	width: fit-content;
+  background-color: var(--spice-button);
+  color: var(--spice-text);
+  padding: 0.5rem 1rem;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  width: fit-content;
+  border-radius: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.secondary {
+  background-color: var(--spice-main-elevated);
 }
 
 .hr {
-	border: none;
-	border-top: 1px solid var(--spice-button-disabled);
-	width: 100%;
-	margin: 0.5rem 0;
+  border: none;
+  border-top: 1px solid var(--spice-button-disabled);
+  width: 100%;
+  margin: 0.5rem 0;
 }
 
 .modal {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .loggedIn {
-	font-size: 1.25rem;
-	font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .inputContainer {
-	display: flex;
-	flex-direction: column;
-	width: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .inputContainer label {
-	color: var(--spice-subtext);
-	margin-bottom: 0.25rem;
+  color: var(--spice-subtext);
+  margin-bottom: 0.25rem;
 }
 
 .inputContainer input,
 .quickConnectBox {
-	background-color: var(--spice-main-elevated);
-	color: var(--spice-text);
-	border: 1px solid var(--spice-card);
-	padding: 0.5rem 0.6rem;
-	font-size: 0.95rem;
-	transition: 200ms border-color;
+  background-color: var(--spice-main-elevated);
+  color: var(--spice-text);
+  border: 1px solid var(--spice-card);
+  padding: 0.5rem 0.6rem;
+  font-size: 0.95rem;
+  transition: 200ms border-color;
+  border-radius: 0.35rem;
 }
 
 .inputContainer input:focus {
-	border-color: var(--spice-button);
+  border-color: var(--spice-button);
 }
 
 .inputContainer input::placeholder {
-	color: var(--spice-subtext);
-	opacity: 0.5;
+  color: var(--spice-subtext);
+  opacity: 0.5;
 }
 
 .separator {
-	width: 100%;
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	color: var(--spice-subtext);
-}
-
-.quick_connect {
-	background-color: var(--spice-main-elevated);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--spice-subtext);
 }
 
 .quickConnectWrapper {
-	position: relative;
-	display: grid;
-	grid-template-columns: repeat(6, 1fr);
-	gap: 0.25rem;
-	height: 2.5rem;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.25rem;
+  height: 2.5rem;
 }
 
 .quickConnectInput {
-	background-color: transparent !important;
-	border-color: transparent !important;
-	color: transparent !important;
-	position: absolute;
-	inset: 0;
-	z-index: 5;
+  background-color: transparent !important;
+  border-color: transparent !important;
+  color: transparent !important;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
 }
 
 .quickConnectBox {
-	width: 100%;
-	height: 100%;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	border-radius: 0.25rem;
-	font-size: 1.25rem;
-	font-weight: 500;
-	padding: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0.25rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  padding: 0;
 }
