@@ -2,10 +2,12 @@ import { getSearchApi } from "@jellyfin/sdk/lib/utils/api/search-api";
 import { BaseItemKind } from "@jellyfin/sdk/lib/generated-client/models";
 import * as jellyfin from "./jellyfin";
 import * as player from "./player";
+import { settings } from "./settingsStore";
 
 // Add Jellyfin tracks to search (usually for songs not available on Spotify)
 export function init() {
   Spicetify.Platform.History.listen(async (location) => {
+    if (!settings.hijack) return;
     if (!jellyfin.api) return;
     if (!location.pathname.startsWith("/search/")) return;
 

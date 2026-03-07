@@ -12,15 +12,61 @@
   gap: 0.3rem;
 }
 
+.button:hover {
+  background-color: var(--spice-button-active);
+}
+
 .secondary {
   background-color: var(--spice-main-elevated);
 }
 
 .hr {
   border: none;
-  border-top: 1px solid var(--spice-button-disabled);
+  border-top: 1px solid var(--spice-highlight-elevated);
   width: 100%;
   margin: 0.5rem 0;
+}
+
+.switch {
+  position: relative;
+  appearance: none;
+  background-color: var(--spice-tab-active);
+  border-radius: 1.5rem;
+  height: 1.5rem;
+  width: 2.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.switch::after {
+  content: "";
+  position: absolute;
+  background-color: var(--spice-subtext);
+  border-radius: 100%;
+  height: 1.125rem;
+  width: 1.125rem;
+  left: 0.1875rem;
+  top: 0.1875rem;
+  transition: all 0.3s ease;
+}
+
+.switch:hover {
+  background-color: var(--spice-button-disabled);
+}
+
+.switch:checked {
+  background-color: var(--spice-button);
+}
+
+.switch:checked::after {
+  left: 1.4375rem;
+  background-color: var(--spice-main);
+}
+
+.switch:checked:hover {
+  background-color: var(--spice-button-active);
 }
 
 .modal {
@@ -101,4 +147,26 @@
   font-size: 1.25rem;
   font-weight: 500;
   padding: 0;
+}
+
+.setting {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--spice-highlight);
+  border-radius: 0.5rem;
+}
+
+.settingInfo h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--spice-text);
+  margin: 0 0 0.25rem 0;
+}
+
+.settingInfo p {
+  font-size: 0.875rem;
+  color: var(--spice-subtext);
+  margin: 0;
 }
