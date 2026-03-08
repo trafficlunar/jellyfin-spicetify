@@ -4,6 +4,7 @@ import SettingsModal from "./settings";
 import * as jellyfin from "./jellyfin";
 import * as player from "./player";
 import * as search from "./search";
+import { setSettings, Settings } from "./settingsStore";
 
 async function main() {
   while (!Spicetify.showNotification) {
@@ -27,11 +28,27 @@ async function main() {
     });
   });
 
-  await jellyfin.tryAutoLogin();
-  hasLoaded = true;
+  // Load settings
+  const savedSettings = Spicetify.LocalStorage.get("jellyfin-settings");
+  if (savedSettings) setSettings(JSON.parse(savedSettings) as unknown as Settings);
 
+  await jellyfin.tryAutoLogin();
   player.registerEvents();
   search.init();
+
+  new Spicetify.ContextMenu.Item(
+    "Toggle Jellyfin",
+    () => {},
+    (uris) => {
+      // Only show context menu on tracks
+      if (uris.length === 1 && Spicetify.URI.fromString(uris[0]).type === Spicetify.URI.Type.TRACK) {
+        return true;
+      }
+      return false;
+    },
+    icon as any,
+  ).register();
+  hasLoaded = true;
 }
 
 main();

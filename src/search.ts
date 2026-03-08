@@ -7,7 +7,7 @@ import { settings } from "./settingsStore";
 // Add Jellyfin tracks to search (usually for songs not available on Spotify)
 export function init() {
   Spicetify.Platform.History.listen(async (location) => {
-    if (!settings.hijack) return;
+    if (!settings.nonSpotifySongs) return;
     if (!jellyfin.api) return;
     if (!location.pathname.startsWith("/search/")) return;
 
@@ -47,12 +47,17 @@ export function init() {
       if (!albumCover || !songTitle || !songArtist || !duration || !sectionEnd || !contextMenuButton || !trackInfo.Id) return;
 
       // Remove all children of sectionEnd except duration and context menu button
+      duration.id = "dontdelete";
+      contextMenuButton.id = "dontdelete";
+
       Array.from(sectionEnd.children).forEach((child) => {
-        if (child !== duration || child !== contextMenuButton) child.remove();
+        if (child.id !== "dontdelete") child.remove();
       });
 
       // Instead of removing, hide it to keep gap
+      contextMenuButton.disabled = true;
       contextMenuButton.style.opacity = "0";
+      contextMenuButton.style.cursor = "auto";
 
       // TODO: fallback image
       albumCover.src = `${jellyfin.api?.basePath}/Items/${trackInfo.Id}/Images/Primary?fillHeight=40&fillWidth=40&quality=96`; // Aim for 40x40 resolution

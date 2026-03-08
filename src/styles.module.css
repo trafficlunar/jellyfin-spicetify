@@ -20,6 +20,10 @@
   background-color: var(--spice-main-elevated);
 }
 
+.secondary:hover {
+  background-color: var(--spice-highlight);
+}
+
 .hr {
   border: none;
   border-top: 1px solid var(--spice-highlight-elevated);
@@ -74,11 +78,6 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-}
-
-.loggedIn {
-  font-size: 1.25rem;
-  font-weight: 600;
 }
 
 .inputContainer {
@@ -149,6 +148,12 @@
   padding: 0;
 }
 
+.loggedIn {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
 .setting {
   display: flex;
   align-items: center;
@@ -169,4 +174,11 @@
   font-size: 0.875rem;
   color: var(--spice-subtext);
   margin: 0;
+}
+
+.setting select {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: fit-content;
+  padding-inline: 12px 6px;
 }

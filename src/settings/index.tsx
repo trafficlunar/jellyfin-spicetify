@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import * as jellyfin from "../jellyfin";
 
 import UrlView from "./views/url";
@@ -19,6 +19,16 @@ const COMPONENTS: Record<View, React.ComponentType<any>> = {
 
 export default function SettingsModal() {
   const [view, setView] = useState<View>(jellyfin.user ? "settings" : "url");
+
+  // Add more space
+  useEffect(() => {
+    const section = document.querySelector<HTMLElement>(".main-trackCreditsModal-mainSection");
+    if (section) section.style.padding = "16px 24px 0";
+
+    return () => {
+      if (section) section.style.padding = "";
+    };
+  }, []);
 
   const ViewComponent = COMPONENTS[view];
 

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "bun build.ts && spicetify apply",
     "build-local": "bun build.ts --local",
-    "watch": "bun build.ts --watch && spicetify watch -le"
+    "watch": "bun build.ts --watch & spicetify watch -le"
   },
   "license": "MIT",
   "devDependencies": {

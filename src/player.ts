@@ -1,6 +1,7 @@
 import { getSearchApi } from "@jellyfin/sdk/lib/utils/api/search-api";
-import { BaseItemKind } from "@jellyfin/sdk/lib/generated-client/models";
+import { BaseItemKind, SearchHint } from "@jellyfin/sdk/lib/generated-client/models";
 import * as jellyfin from "./jellyfin";
+import { settings } from "./settingsStore";
 
 export const audio = new Audio();
 export let hijackActive = false;
@@ -13,20 +14,48 @@ export function setCurrentVolume(value: number) {
   currentVolume = value;
 }
 
+const BITRATE_MAP: Record<string, string> = {
+  high: "320000",
+  medium: "256000",
+  low: "128000",
+};
+
 export async function playTrack(id: string) {
-  const oldVolume = Spicetify.Player.getVolume();
-  Spicetify.Player.setVolume(0); // Set Spotify audio volume to 0
+  try {
+    const oldVolume = Spicetify.Player.getVolume();
+    Spicetify.Player.setVolume(0); // Set Spotify audio volume to 0
 
-  setHijackActive(true);
-  audio.src = `${jellyfin.api?.basePath}/Audio/${id}/universal?api_key=${jellyfin.api?.accessToken}&UserId=${jellyfin.user}&Container=flac,aac,mp3&AudioCodec=flac,aac&MaxStreamingBitrate=140000000&EnableRedirection=true`;
-  await audio.play();
+    setHijackActive(true);
+    Spicetify.Player.setVolume(oldVolume); // Volume is now hijacked, will now set Jellyfin audio volume and also update the volume slider
 
-  Spicetify.Player.setVolume(oldVolume); // Volume is now hijacked, will now set Jellyfin audio volume and also update the volume slider
+    const params = new URLSearchParams({
+      api_key: jellyfin.api?.accessToken ?? "",
+      UserId: jellyfin.user ?? "",
+      Container: "flac,aac,mp3",
+      EnableRedirection: "true",
+      ...(settings.quality === "source" && {
+        Container: "mp3",
+        AudioCodec: "mp3",
+        TranscodingContainer: "mp3",
+        TranscodingProtocol: "http",
+        MaxStreamingBitrate: BITRATE_MAP[settings.quality],
+      }),
+    });
+
+    audio.src = `${jellyfin.api?.basePath}/Audio/${id}/universal?${params}`;
+    console.log("[Jellyfin] Attempting to play:", audio.src);
+    await audio.play();
+  } catch (error) {
+    console.error("An error occurred trying to play a track on Jellyfin", error);
+    Spicetify.showNotification("An error occurred trying to play a track on Jellyfin", true);
+    setHijackActive(false);
+  }
 }
 
 export function registerEvents() {
   // Search Jellyfin for song and play that instead if found
   Spicetify.Player.addEventListener("songchange", async (event) => {
+    if (!settings.hijack) return;
     if (!jellyfin.api) return;
     if (!event) return;
 
@@ -57,8 +86,6 @@ export function registerEvents() {
     } else {
       await audio.play();
     }
-
-    Spicetify.Player.setVolume(currentVolume);
   });
 
   // Seeking support
@@ -79,7 +106,7 @@ export function registerEvents() {
     oldTime = event.data;
   });
 
-  // Change volume of Jellyfin audio instead of Spotify audio
+  // Hijack Spotify APIs to change volume of Jellyfin audio instead of Spotify audio
   const playback = Spicetify.Platform.PlaybackAPI;
   playback.getVolume = new Proxy(playback.getVolume, {
     apply(target, thisArg, args) {
@@ -91,8 +118,9 @@ export function registerEvents() {
   });
   playback.setVolume = new Proxy(playback.setVolume, {
     apply(target, thisArg, args) {
+      setCurrentVolume(args[0]);
+
       if (hijackActive) {
-        setCurrentVolume(args[0]);
         audio.volume = Math.pow(currentVolume, 3);
 
         const volumeSlider: HTMLDivElement | null = document.querySelector(".volume-bar__slider-container > div > div");

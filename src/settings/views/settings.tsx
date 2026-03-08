@@ -8,8 +8,7 @@ interface Props {
 }
 
 export default function SettingsView({ setView }: Props) {
-  const savedSettings = Spicetify.LocalStorage.get("jellyfin-settings");
-  const [settings, setSettings] = useState<Settings>(savedSettings ? JSON.parse(savedSettings) : settingsStore);
+  const [settings, setSettings] = useState<Settings>(settingsStore);
 
   const logout = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -57,9 +56,23 @@ export default function SettingsView({ setView }: Props) {
       </svg>
       <p className={styles.loggedIn}>You're logged in!</p>
 
-      {/*<select name="" id="">
-        <option value="">Source</option>
-      </select>*/}
+      <div className={styles.setting}>
+        <div className={styles.settingInfo}>
+          <h2>Audio Quality</h2>
+          <p>The quality of the audio, transcoding may be used</p>
+        </div>
+
+        <select
+          className="main-dropDown-dropDown"
+          value={settings.quality}
+          onChange={(e) => setSettings((p) => ({ ...p, quality: e.target.value as typeof settings.quality }))}
+        >
+          <option value="source">Source</option>
+          <option value="high">High (320 kbps)</option>
+          <option value="medium">Medium (256 kbps)</option>
+          <option value="low">Low (128 kbps)</option>
+        </select>
+      </div>
 
       <div className={styles.setting}>
         <div className={styles.settingInfo}>
@@ -68,6 +81,20 @@ export default function SettingsView({ setView }: Props) {
         </div>
 
         <input type="checkbox" checked={settings.hijack} onChange={(e) => setSettings((p) => ({ ...p, hijack: e.target.checked }))} className={styles.switch} />
+      </div>
+
+      <div className={styles.setting}>
+        <div className={styles.settingInfo}>
+          <h2>Add Non-Spotify Songs</h2>
+          <p>Enable to add Jellyfin songs not on Spotify to searches</p>
+        </div>
+
+        <input
+          type="checkbox"
+          checked={settings.nonSpotifySongs}
+          onChange={(e) => setSettings((p) => ({ ...p, nonSpotifySongs: e.target.checked }))}
+          className={styles.switch}
+        />
       </div>
 
       <hr className={styles.hr} />
