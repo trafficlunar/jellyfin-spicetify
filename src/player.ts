@@ -29,8 +29,8 @@ export async function playTrack(id: string) {
   if (!jellyfin.api) return;
 
   try {
-    const oldVolume = Spicetify.Player.getVolume();
-    Spicetify.Player.setVolume(0); // Set Spotify audio volume to 0
+    const oldVolume = hijackActive ? currentVolume : Spicetify.Player.getVolume();
+    if (!hijackActive) Spicetify.Player.setVolume(0); // Set Spotify audio volume to 0
 
     setHijackActive(true);
     Spicetify.Player.setVolume(oldVolume); // Volume is now hijacked, will now set Jellyfin audio volume and also update the volume slider
@@ -150,28 +150,36 @@ export function registerEvents() {
     oldTime = event.data;
   });
 
+  const volumeSlider: HTMLDivElement | null = document.querySelector(".volume-bar__slider-container > div > div");
+
   // Hijack Spotify APIs to change volume of Jellyfin audio instead of Spotify audio
   const playback = Spicetify.Platform.PlaybackAPI;
-  playback.getVolume = new Proxy(playback.getVolume, {
-    apply(target, thisArg, args) {
-      if (hijackActive) {
-        return currentVolume;
-      }
-      return Reflect.apply(target, thisArg, args);
-    },
-  });
   playback.setVolume = new Proxy(playback.setVolume, {
     apply(target, thisArg, args) {
       setCurrentVolume(args[0]);
 
       if (hijackActive) {
         audio.volume = Math.pow(currentVolume, 3);
-
-        const volumeSlider: HTMLDivElement | null = document.querySelector(".volume-bar__slider-container > div > div");
         if (volumeSlider) volumeSlider.style.setProperty("--progress-bar-transform", `${currentVolume * 100}%`);
         return;
       }
       return Reflect.apply(target, thisArg, args);
     },
   });
+
+  if (!volumeSlider) return;
+  const observer = new MutationObserver(() => {
+    const transform = volumeSlider.style.getPropertyValue("--progress-bar-transform");
+
+    const currentPercent = currentVolume * 100;
+    const transformPercent = parseFloat(transform); // strips the "%"
+
+    // 0.1% tolerance
+    if (Math.abs(currentPercent - transformPercent) > 0.1) {
+      observer.disconnect(); // prevent re-triggering while we update
+      volumeSlider.style.setProperty("--progress-bar-transform", `${currentPercent}%`);
+      observer.observe(volumeSlider, { attributes: true, attributeFilter: ["style"] });
+    }
+  });
+  observer.observe(volumeSlider, { attributes: true, attributeFilter: ["style"] });
 }
