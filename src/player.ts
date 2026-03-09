@@ -1,5 +1,6 @@
 import { getSearchApi } from "@jellyfin/sdk/lib/utils/api/search-api";
-import { BaseItemKind, SearchHint } from "@jellyfin/sdk/lib/generated-client/models";
+import { getPlaystateApi } from "@jellyfin/sdk/lib/utils/api/playstate-api";
+import { BaseItemKind } from "@jellyfin/sdk/lib/generated-client/models";
 import * as jellyfin from "./jellyfin";
 import { settings } from "./settingsStore";
 
@@ -20,7 +21,13 @@ const BITRATE_MAP: Record<string, string> = {
   low: "128000",
 };
 
+let currentItemId: string | null = null;
+let oldTime = 0;
+let lastProgressReport = 0;
+
 export async function playTrack(id: string) {
+  if (!jellyfin.api) return;
+
   try {
     const oldVolume = Spicetify.Player.getVolume();
     Spicetify.Player.setVolume(0); // Set Spotify audio volume to 0
@@ -29,22 +36,31 @@ export async function playTrack(id: string) {
     Spicetify.Player.setVolume(oldVolume); // Volume is now hijacked, will now set Jellyfin audio volume and also update the volume slider
 
     const params = new URLSearchParams({
-      api_key: jellyfin.api?.accessToken ?? "",
-      UserId: jellyfin.user ?? "",
-      Container: "flac,aac,mp3",
-      EnableRedirection: "true",
-      ...(settings.quality === "source" && {
-        Container: "mp3",
-        AudioCodec: "mp3",
-        TranscodingContainer: "mp3",
-        TranscodingProtocol: "http",
-        MaxStreamingBitrate: BITRATE_MAP[settings.quality],
+      api_key: jellyfin.api.accessToken ?? "",
+      userId: jellyfin.user ?? "",
+      container: "flac,aac,mp3",
+      enableRedirection: "true",
+      ...(settings.quality !== "source" && {
+        container: "mp3",
+        audioCodec: "mp3",
+        transcodingContainer: "mp3",
+        transcodingProtocol: "http",
+        maxStreamingBitrate: BITRATE_MAP[settings.quality],
       }),
     });
 
-    audio.src = `${jellyfin.api?.basePath}/Audio/${id}/universal?${params}`;
+    audio.src = `${jellyfin.api.basePath}/Audio/${id}/universal?${params}`;
     console.log("[Jellyfin] Attempting to play:", audio.src);
     await audio.play();
+
+    if (settings.reportPlayback) {
+      currentItemId = id;
+      getPlaystateApi(jellyfin.api).reportPlaybackStart({
+        playbackStartInfo: {
+          ItemId: id,
+        },
+      });
+    }
   } catch (error) {
     console.error("An error occurred trying to play a track on Jellyfin", error);
     Spicetify.showNotification("An error occurred trying to play a track on Jellyfin", true);
@@ -55,9 +71,17 @@ export async function playTrack(id: string) {
 export function registerEvents() {
   // Search Jellyfin for song and play that instead if found
   Spicetify.Player.addEventListener("songchange", async (event) => {
-    if (!settings.hijack) return;
-    if (!jellyfin.api) return;
-    if (!event) return;
+    if (!settings.hijack || !jellyfin.api || !event) return;
+
+    if (currentItemId) {
+      getPlaystateApi(jellyfin.api).reportPlaybackStopped({
+        playbackStopInfo: {
+          ItemId: currentItemId,
+          PositionTicks: Math.floor(audio.currentTime * 10_000_000),
+        },
+      });
+      currentItemId = null;
+    }
 
     const results = await getSearchApi(jellyfin.api).getSearchHints({
       searchTerm: event.data.item.name,
@@ -79,20 +103,40 @@ export function registerEvents() {
 
   // Play/pause Jellyfin audio
   Spicetify.Player.addEventListener("onplaypause", async (event) => {
-    if (!hijackActive) return;
+    if (!hijackActive || !jellyfin.api) return;
 
     if (event?.data.isPaused) {
       audio.pause();
     } else {
       await audio.play();
     }
+
+    if (settings.reportPlayback && currentItemId) {
+      getPlaystateApi(jellyfin.api).reportPlaybackProgress({
+        playbackProgressInfo: {
+          ItemId: currentItemId,
+          PositionTicks: Math.floor(audio.currentTime * 10_000_000),
+          IsPaused: audio.paused,
+        },
+      });
+    }
   });
 
   // Seeking support
-  let oldTime = 0;
   Spicetify.Player.addEventListener("onprogress", async (event) => {
-    if (!hijackActive) return;
-    if (!event) return;
+    if (!hijackActive || !jellyfin.api || !event) return;
+
+    // Only report playback every 10s
+    if (settings.reportPlayback && currentItemId && event.data - lastProgressReport > 10000) {
+      getPlaystateApi(jellyfin.api).reportPlaybackProgress({
+        playbackProgressInfo: {
+          ItemId: currentItemId,
+          PositionTicks: Math.floor(audio.currentTime * 10_000_000),
+          IsPaused: audio.paused,
+        },
+      });
+      lastProgressReport = event.data;
+    }
 
     // onprogress polls every 100ms, small time difference means normal playback
     const timeDiff = Math.abs(event.data - oldTime);

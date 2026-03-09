@@ -97,6 +97,20 @@ export default function SettingsView({ setView }: Props) {
         />
       </div>
 
+      <div className={styles.setting}>
+        <div className={styles.settingInfo}>
+          <h2>Report Playback</h2>
+          <p>Enable to report playback to your Jellyfin server</p>
+        </div>
+
+        <input
+          type="checkbox"
+          checked={settings.reportPlayback}
+          onChange={(e) => setSettings((p) => ({ ...p, reportPlayback: e.target.checked }))}
+          className={styles.switch}
+        />
+      </div>
+
       <hr className={styles.hr} />
       <button onClick={logout} className={styles.button}>
         Log out
