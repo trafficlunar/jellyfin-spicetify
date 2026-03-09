@@ -8,13 +8,6 @@ export const audio = new Audio();
 export let hijackActive = false;
 export let currentVolume = 0.5;
 
-export function setHijackActive(value: boolean) {
-  hijackActive = value;
-}
-export function setCurrentVolume(value: number) {
-  currentVolume = value;
-}
-
 const BITRATE_MAP: Record<string, string> = {
   high: "320000",
   medium: "256000",
@@ -24,6 +17,9 @@ const BITRATE_MAP: Record<string, string> = {
 let currentItemId: string | null = null;
 let oldTime = 0;
 let lastProgressReport = 0;
+export function setHijackActive(value: boolean) {
+  hijackActive = value;
+}
 
 export async function playTrack(id: string) {
   if (!jellyfin.api) return;
@@ -32,7 +28,7 @@ export async function playTrack(id: string) {
     const oldVolume = hijackActive ? currentVolume : Spicetify.Player.getVolume();
     if (!hijackActive) Spicetify.Player.setVolume(0); // Set Spotify audio volume to 0
 
-    setHijackActive(true);
+    hijackActive = true;
     Spicetify.Player.setVolume(oldVolume); // Volume is now hijacked, will now set Jellyfin audio volume and also update the volume slider
 
     const params = new URLSearchParams({
@@ -64,7 +60,7 @@ export async function playTrack(id: string) {
   } catch (error) {
     console.error("An error occurred trying to play a track on Jellyfin", error);
     Spicetify.showNotification("An error occurred trying to play a track on Jellyfin", true);
-    setHijackActive(false);
+    hijackActive = false;
   }
 }
 
@@ -91,7 +87,7 @@ export function registerEvents() {
 
     const item = results.data.SearchHints?.[0];
     if (!item?.Id) {
-      setHijackActive(false);
+      hijackActive = false;
       audio.pause();
       Spicetify.Player.setVolume(currentVolume);
       return;
@@ -156,7 +152,7 @@ export function registerEvents() {
   const playback = Spicetify.Platform.PlaybackAPI;
   playback.setVolume = new Proxy(playback.setVolume, {
     apply(target, thisArg, args) {
-      setCurrentVolume(args[0]);
+      currentVolume = args[0];
 
       if (hijackActive) {
         audio.volume = Math.pow(currentVolume, 3);

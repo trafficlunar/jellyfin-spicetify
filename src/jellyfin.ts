@@ -1,6 +1,15 @@
 import { Api, Jellyfin } from "@jellyfin/sdk";
 import { getUserApi } from "@jellyfin/sdk/lib/utils/api/user-api";
 
+const getDeviceId = (): string => {
+  const existing = Spicetify.LocalStorage.get("jellyfin-device-id");
+  if (existing) return existing;
+
+  const id = crypto.randomUUID();
+  Spicetify.LocalStorage.set("jellyfin-device-id", id);
+  return id;
+};
+
 export const sdk = new Jellyfin({
   clientInfo: {
     name: "Spicetify",
@@ -8,7 +17,7 @@ export const sdk = new Jellyfin({
   },
   deviceInfo: {
     name: "Spotify",
-    id: "spotify", // TODO: should be unique?
+    id: getDeviceId(),
   },
 });
 

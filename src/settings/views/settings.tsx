@@ -77,7 +77,7 @@ export default function SettingsView({ setView }: Props) {
       <div className={styles.setting}>
         <div className={styles.settingInfo}>
           <h2>Audio Hijack</h2>
-          <p>Enable to replace Spotify song audio with Jellyfin audio</p>
+          <p>Enable to replace Spotify song audio with Jellyfin audio if found</p>
         </div>
 
         <input type="checkbox" checked={settings.hijack} onChange={(e) => setSettings((p) => ({ ...p, hijack: e.target.checked }))} className={styles.switch} />
