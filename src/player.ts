@@ -157,6 +157,7 @@ export function registerEvents() {
   });
 
   const volumeSlider: HTMLDivElement | null = document.querySelector(".volume-bar__slider-container > div > div");
+  const volumeSliderInput: HTMLInputElement | null = document.querySelector(".volume-bar__slider-container > div > label > input");
 
   // Hijack Spotify APIs to change volume of Jellyfin audio instead of Spotify audio
   const playback = Spicetify.Platform.PlaybackAPI;
@@ -167,12 +168,14 @@ export function registerEvents() {
       if (hijackActive.get()) {
         audio.volume = Math.pow(currentVolume, 3) * 0.425;
         if (volumeSlider) volumeSlider.style.setProperty("--progress-bar-transform", `${currentVolume * 100}%`);
+        if (volumeSliderInput) volumeSliderInput.value = currentVolume.toString();
         return;
       }
       return Reflect.apply(target, thisArg, args);
     },
   });
 
+  // Spotify tries to set the volume on the slider to 0 when hijacked, this tries to revert it
   if (!volumeSlider) return;
   const observer = new MutationObserver(() => {
     const transform = volumeSlider.style.getPropertyValue("--progress-bar-transform");
@@ -180,7 +183,7 @@ export function registerEvents() {
     const currentPercent = currentVolume * 100;
     const transformPercent = parseFloat(transform); // strips the "%"
 
-    // 0.1% tolerance
+    // 0.1% tolerance (floating point)
     if (Math.abs(currentPercent - transformPercent) > 0.1) {
       observer.disconnect(); // prevent re-triggering while we update
       volumeSlider.style.setProperty("--progress-bar-transform", `${currentPercent}%`);
@@ -188,4 +191,16 @@ export function registerEvents() {
     }
   });
   observer.observe(volumeSlider, { attributes: true, attributeFilter: ["style"] });
+
+  // Similar to the other observer, but for the input (you'll notice it when scrolling the volume slider)
+  if (!volumeSliderInput) return;
+  const inputObserver = new MutationObserver(() => {
+    // 0.1% tolerance (floating point)
+    if (Math.abs(currentVolume - volumeSliderInput.valueAsNumber) > 0.1) {
+      inputObserver.disconnect(); // prevent re-triggering while we update
+      volumeSliderInput.value = currentVolume.toString();
+      inputObserver.observe(volumeSlider, { attributes: true, attributeFilter: ["value"] });
+    }
+  });
+  inputObserver.observe(volumeSlider, { attributes: true, attributeFilter: ["value"] });
 }
