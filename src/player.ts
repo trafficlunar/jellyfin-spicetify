@@ -155,7 +155,7 @@ export function registerEvents() {
       currentVolume = args[0];
 
       if (hijackActive) {
-        audio.volume = Math.pow(currentVolume, 3);
+        audio.volume = Math.pow(currentVolume, 3) * 0.425;
         if (volumeSlider) volumeSlider.style.setProperty("--progress-bar-transform", `${currentVolume * 100}%`);
         return;
       }
