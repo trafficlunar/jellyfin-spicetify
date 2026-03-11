@@ -1,6 +1,6 @@
 # jellyfin-spicetify
 
-WIP: A Spicetify extension to integrate your Jellyfin music library into Spotify
+WIP: Spicetify extension to integrate your Jellyfin music library into Spotify
 
 ## Downloads
 
@@ -13,6 +13,7 @@ WIP: A Spicetify extension to integrate your Jellyfin music library into Spotify
 
 - Stream music from Jellyfin instead of Spotify
 - Play tracks that exist on Jellyfin but aren't available on Spotify
+- Easily toggle between Jellyfin and Spotify audio
 
 ## Known Limitations
 

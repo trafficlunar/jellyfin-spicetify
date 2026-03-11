@@ -55,7 +55,7 @@ export async function tryAutoLogin() {
         Spicetify.showNotification("Jellyfin session expired. Please log in again.", true);
       } else {
         Spicetify.showNotification("Failed to connect to Jellyfin.", true);
-        console.error("Jellyfin init error:", error);
+        console.error("[Jellyfin]: init error:", error);
       }
     }
   }
