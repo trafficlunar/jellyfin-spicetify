@@ -34,6 +34,7 @@ export async function playTrack(id: string) {
     if (!hijackActive.get()) Spicetify.Player.setVolume(0); // Set Spotify audio volume to 0
 
     hijackActive.set(true);
+    oldTime = 0;
     Spicetify.Player.setVolume(oldVolume); // Hijack active, set Jellyfin audio volume and also update the volume slider
 
     const params = new URLSearchParams({
