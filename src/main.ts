@@ -40,9 +40,7 @@ async function main() {
     icon,
     (self) => {
       if (self.active) {
-        player.hijackActive.set(false);
-        player.audio.pause();
-        Spicetify.Player.setVolume(player.currentVolume);
+        player.stop();
       } else {
         const oldVolume = player.currentVolume;
         Spicetify.Player.setVolume(0); // Set Spotify audio volume

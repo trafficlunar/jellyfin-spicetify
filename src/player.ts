@@ -1,6 +1,9 @@
 import { getSearchApi } from "@jellyfin/sdk/lib/utils/api/search-api";
 import { getPlaystateApi } from "@jellyfin/sdk/lib/utils/api/playstate-api";
-import { BaseItemKind, SearchHint } from "@jellyfin/sdk/lib/generated-client/models";
+import { BaseItemKind } from "@jellyfin/sdk/lib/generated-client/models";
+
+import Fuse from "fuse.js";
+
 import * as jellyfin from "./jellyfin";
 import { settings } from "./settingsStore";
 import { signal } from "./utils";
@@ -19,11 +22,11 @@ const BITRATE_MAP: Record<string, string> = {
   low: "128000",
 };
 
-export function jellyfinToLocalUri(trackInfo: SearchHint): string {
-  const encode = (s: string) => encodeURIComponent(s ?? "").replace(/%20/g, "+");
-  const durationSecs = trackInfo.RunTimeTicks ? Math.floor(trackInfo.RunTimeTicks / 10000000) : 0;
-
-  return `spotify:local:${encode(trackInfo.Artists?.[0] ?? "Unknown artist")}:${trackInfo.Id}:${encode(trackInfo.Name ?? "Unknown title")}:${durationSecs}`;
+// Stop Jellfin audio
+export function stop() {
+  hijackActive.set(false);
+  audio.pause();
+  Spicetify.Player.setVolume(currentVolume);
 }
 
 export async function playTrack(id: string) {
@@ -87,23 +90,40 @@ export function registerEvents() {
       currentItemId = null;
     }
 
-    const results = await getSearchApi(jellyfin.api).getSearchHints({
-      searchTerm: event.data.item.name,
+    const trackName = event.data.item.name;
+    const searchResults = await getSearchApi(jellyfin.api).getSearchHints({
+      searchTerm: trackName,
       includeItemTypes: [BaseItemKind.Audio],
-      limit: 1,
+      limit: 32,
     });
 
-    const item = results.data.SearchHints?.[0];
-    if (!item?.Id) {
-      hijackActive.set(false);
-      audio.pause();
-      Spicetify.Player.setVolume(currentVolume);
+    if (!searchResults.data.SearchHints || searchResults.data.SearchHints.length === 0) {
+      stop();
+      return;
+    }
+
+    // Fuzzy search
+    const artists = event.data.item.artists?.map((a) => a.name).join(" ") ?? "";
+    const list = searchResults.data.SearchHints.map((v) => ({
+      id: v.Id ?? "",
+      name: v.Name ?? "Unknown title",
+      artists: (v.Artists ?? ["Unknown artist"]).join(" "),
+    }));
+
+    const results = new Fuse(list, {
+      keys: ["name", "artists"],
+      threshold: 0.5,
+    }).search(`${trackName} ${artists}`);
+
+    const track = results[0]?.item;
+    if (!track) {
+      stop();
       return;
     }
 
     Spicetify.showNotification("Playing on Jellyfin");
     canUseJellyfin.set(true);
-    playTrack(item.Id);
+    playTrack(track.id);
 
     audio.currentTime = oldTime; // sync up with Spotify, due to loading times
   });
@@ -147,11 +167,13 @@ export function registerEvents() {
 
     // onprogress polls every 100ms, small time difference means normal playback
     const timeDiff = Math.abs(event.data - oldTime);
-    if (Math.abs(timeDiff - 100) < 100) {
-      // Allow 100ms tolerance
+    if (Math.abs(timeDiff - 100) < 200) {
+      // Allow 200ms tolerance
       oldTime = event.data;
       return;
     }
+
+    console.log(event.data, oldTime);
 
     audio.currentTime = event.data / 1000;
     oldTime = event.data;
