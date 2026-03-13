@@ -42,12 +42,18 @@ async function main() {
       if (self.active) {
         player.stop();
       } else {
+        // Set volume
         const oldVolume = player.currentVolume;
         Spicetify.Player.setVolume(0); // Set Spotify audio volume
         player.hijackActive.set(true);
         Spicetify.Player.setVolume(oldVolume); // Hijack is active, set Jellyfin audio volume
 
-        player.audio.currentTime = Spicetify.Player.getProgress() / 1000; // Sync position
+        // Sync positions
+        const time = Spicetify.Player.getProgress();
+        player.audio.currentTime = time / 1000;
+        player.setOldTime(time);
+
+        // Play
         if (Spicetify.Player.isPlaying()) player.audio.play();
       }
     },

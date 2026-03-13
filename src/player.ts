@@ -16,6 +16,11 @@ let currentItemId: string | null = null;
 let oldTime = 0;
 let lastProgressReport = 0;
 
+export function setOldTime(value: number) {
+  // no signal because we don't need to subscribe to it
+  oldTime = value;
+}
+
 const BITRATE_MAP: Record<string, string> = {
   high: "320000",
   medium: "256000",
@@ -55,7 +60,7 @@ export async function playTrack(id: string) {
     });
 
     audio.src = `${jellyfin.api.basePath}/Audio/${id}/universal?${params}`;
-    console.log("[Jellyfin]: Attempting to play:", audio.src);
+    console.debug("[Jellyfin]: Attempting to play:", audio.src);
     await audio.play();
 
     if (settings.reportPlayback) {
@@ -112,8 +117,12 @@ export function registerEvents() {
 
     const results = new Fuse(list, {
       keys: ["name", "artists"],
-      threshold: 0.5,
+      threshold: 0.7,
     }).search(`${trackName} ${artists}`);
+
+    console.debug(`[Jellyfin]: Query is "${trackName} ${artists}"`);
+    console.debug("[Jellyfin]: Search list:", list);
+    console.debug("[Jellyfin]: Fuse search found:", results);
 
     const track = results[0]?.item;
     if (!track) {
@@ -173,7 +182,7 @@ export function registerEvents() {
       return;
     }
 
-    console.log(event.data, oldTime);
+    console.debug(`[Jellyfin]: Seek detected - onprogress reports ${event.data}, old time was ${oldTime}`);
 
     audio.currentTime = event.data / 1000;
     oldTime = event.data;
@@ -189,6 +198,8 @@ export function registerEvents() {
       currentVolume = args[0];
 
       if (hijackActive.get()) {
+        console.debug("[Jellyfin]: Volume is", currentVolume);
+
         audio.volume = Math.pow(currentVolume, 3) * 0.425;
         if (volumeSlider) volumeSlider.style.setProperty("--progress-bar-transform", `${currentVolume * 100}%`);
         if (volumeSliderInput) volumeSliderInput.value = currentVolume.toString();
