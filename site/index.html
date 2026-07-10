@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>jellyfin-spicetify</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet" />
+
+    <style>
+      :root {
+        --bg: #0b0b10;
+        --surface: #15151d;
+        --elevated: #222230;
+
+        --primary: #aa5cc3;
+        --primary-dark: #8e3daf;
+
+        --accent: #1db954;
+
+        --text: #e8e8ea;
+        --text-muted: #8a8a96;
+
+        --border: #30303d;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background-color: var(--bg);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        font-family: "Plus Jakarta Sans", sans-serif;
+        letter-spacing: -0.03em;
+        background-image:
+          radial-gradient(circle at 15% 15%, rgba(170, 92, 195, 0.21) 0%, transparent 50%),
+          radial-gradient(circle at 85% 15%, rgba(29, 185, 84, 0.18) 0%, transparent 50%);
+      }
+
+      main {
+        background-color: var(--surface);
+        border: 1px solid var(--border);
+        max-width: 30rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-top: 4rem;
+        height: min-content;
+      }
+
+      h1 {
+        margin: 0;
+        font-weight: 900;
+      }
+
+      h3 {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: var(--text-muted);
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid var(--border);
+      }
+
+      .button {
+        background: var(--primary);
+        border: 1px solid var(--primary);
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 0.45rem 0.7rem;
+        border-radius: 0.25rem;
+        font-size: 0.925rem;
+        margin-right: 2px;
+        transition:
+          transform 0.15s,
+          background 0.15s;
+      }
+
+      .button:hover {
+        background: var(--primary-dark);
+      }
+
+      .secondary {
+        background: transparent;
+        border-color: var(--border);
+      }
+
+      .secondary:hover {
+        background: var(--elevated);
+      }
+
+      .marketplace-note {
+        font-size: 0.875rem;
+        font-style: italic;
+      }
+
+      footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #author {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.875rem;
+      }
+
+      #author:hover {
+        color: #ffa258;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>jellyfin-spicetify</h1>
+      <p>A Spicetify plugin to allow playing Jellyfin songs on your Spotify client</p>
+
+      <hr />
+      <h3>Downloads</h3>
+      <a href="stable/jellyfin-spicetify.js" download class="button">Stable</a>
+      <a href="unstable/jellyfin-spicetify.js" download class="button secondary">Beta (latest commit)</a>
+      <p class="marketplace-note">Also available on the Spicetify Marketplace!</p>
+
+      <hr style="margin-top: 2rem" />
+      <footer>
+        <a href="https://trafficlunar.net" id="author">made by trafficlunar!</a>
+        <a href="https://ko-fi.com/trafficlunar" class="button">Support on Ko-fi</a>
+      </footer>
+    </main>
+  </body>
+</html>

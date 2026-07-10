@@ -1,16 +1,61 @@
 name: build
-on: [push]
+
+on:
+  push:
+    branches: ["main"]
+
+  # Allows running this workflow manually
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment at a time, let in-progress ones finish
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install
-      - run: bun run build-local
+      - uses: pnpm/action-setup@v6
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build-local
+
       - uses: actions/upload-artifact@v7
         with:
           name: jellyfin-spicetify
           path: dist/jellyfin-spicetify.js
-          # archive: false
+          archive: false
+
+      - name: Assemble site
+        run: |
+          mkdir -p site/unstable
+          cp dist/jellyfin-spicetify.js site/unstable/jellyfin-spicetify.js
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

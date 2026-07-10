@@ -33,6 +33,7 @@ const options: BuildOptions = {
       name: "on-end",
       setup(build) {
         build.onEnd(() => {
+          // Bundle the CSS into the final JS file
           const js = readFileSync("./dist/jellyfin-spicetify.js", "utf-8");
           const css = readFileSync("./dist/jellyfin-spicetify.css", "utf-8");
 
