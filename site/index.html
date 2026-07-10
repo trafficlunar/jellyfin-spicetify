@@ -21,6 +21,7 @@
         --accent: #1db954;
 
         --text: #e8e8ea;
+        --text-secondary: #cdd0d6;
         --text-muted: #8a8a96;
 
         --border: #30303d;
@@ -34,39 +35,81 @@
         display: flex;
         justify-content: center;
         font-family: "Plus Jakarta Sans", sans-serif;
-        letter-spacing: -0.03em;
+        letter-spacing: -0.02em;
         background-image:
           radial-gradient(circle at 15% 15%, rgba(170, 92, 195, 0.21) 0%, transparent 50%),
           radial-gradient(circle at 85% 15%, rgba(29, 185, 84, 0.18) 0%, transparent 50%);
+      }
+
+      svg {
+        fill: var(--accent);
+        width: 2.5rem;
+        height: 2.5rem;
       }
 
       main {
         background-color: var(--surface);
         border: 1px solid var(--border);
         max-width: 30rem;
-        padding: 1rem;
+        padding: 2rem;
         border-radius: 0.5rem;
         margin-top: 4rem;
         height: min-content;
       }
 
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
       h1 {
         margin: 0;
         font-weight: 900;
+        display: inline-block;
+      }
+
+      #repo {
+        margin-left: auto;
+        color: var(--text-muted);
+        opacity: 0.5;
+        align-self: self-start;
+      }
+
+      #repo:hover {
+        color: var(--text);
+      }
+
+      #repo svg {
+        width: 1.75rem;
+        height: 1.75rem;
       }
 
       h3 {
-        margin-top: 1rem;
-        margin-bottom: 1rem;
+        margin: 0;
       }
 
       p {
-        color: var(--text-muted);
+        color: var(--text-secondary);
+      }
+
+      ul {
+        margin-top: 0.25rem;
+      }
+
+      li {
+        color: var(--text-secondary);
+        line-height: 1.75;
+      }
+
+      li::marker {
+        color: var(--primary);
       }
 
       hr {
         border: none;
         border-top: 1px solid var(--border);
+        margin: 1rem 0;
       }
 
       .button {
@@ -78,7 +121,7 @@
         padding: 0.45rem 0.7rem;
         border-radius: 0.25rem;
         font-size: 0.925rem;
-        margin-right: 2px;
+        text-align: center;
         transition:
           transform 0.15s,
           background 0.15s;
@@ -100,6 +143,24 @@
       .marketplace-note {
         font-size: 0.875rem;
         font-style: italic;
+        color: var(--text-muted);
+      }
+
+      .help-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .help-container h3 {
+        margin: 0;
+        margin-bottom: 0.5rem;
+      }
+
+      .help-text-block p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-muted);
       }
 
       footer {
@@ -111,28 +172,87 @@
       #author {
         color: var(--text-muted);
         text-decoration: none;
-        font-size: 0.875rem;
+        font-size: 0.9rem;
       }
 
       #author:hover {
         color: #ffa258;
       }
+
+      @media (max-width: 500px) {
+        main {
+          margin: 1rem;
+          padding: 1.5rem;
+        }
+      }
     </style>
   </head>
   <body>
     <main>
-      <h1>jellyfin-spicetify</h1>
-      <p>A Spicetify plugin to allow playing Jellyfin songs on your Spotify client</p>
+      <header>
+        <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+          <g clip-path="url(#clip0_2143_3811)">
+            <path
+              d="M24.2116 49.1581C22.6599 46.0424 32.8378 27.5879 35.9999 27.5879C39.1666 27.5895 49.3228 46.0764 47.7882 49.1581C46.2536 52.2398 25.7632 52.2738 24.2116 49.1581Z"
+            />
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M0.481861 64.9951C-4.19479 55.6047 26.4765 0 36 0C45.5328 0 76.153 55.713 71.5274 64.9951C66.9018 74.2773 5.15852 74.3856 0.481861 64.9951ZM12.7358 56.847C15.8005 62.9995 56.2536 62.9314 59.2843 56.847C62.3149 50.761 42.2515 14.2605 36.0093 14.2605C29.767 14.2605 9.67118 50.6944 12.7358 56.847Z"
+            />
+          </g>
+          <defs>
+            <clipPath id="clip0_2143_3811">
+              <rect width="72" height="72" fill="white" />
+            </clipPath>
+          </defs>
+        </svg>
+        <h1>jellyfin-spicetify</h1>
+
+        <a href="https://github.com/trafficlunar/jellyfin-spicetify/issues" id="repo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+            <path d="M0 0h24v24H0z" fill="none" />
+            <g fill="none">
+              <path
+                d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"
+              />
+              <path
+                fill="currentColor"
+                d="M6.315 6.176c-.25-.638-.24-1.367-.129-2.034a6.8 6.8 0 0 1 2.12 1.07c.28.214.647.283.989.18A9.3 9.3 0 0 1 12 5c.961 0 1.874.14 2.703.391c.342.104.709.034.988-.18a6.8 6.8 0 0 1 2.119-1.07c.111.667.12 1.396-.128 2.033c-.15.384-.075.826.208 1.14C18.614 8.117 19 9.04 19 10c0 2.114-1.97 4.187-5.134 4.818c-.792.158-1.101 1.155-.495 1.726c.389.366.629.882.629 1.456v3a1 1 0 0 0 2 0v-3c0-.57-.12-1.112-.334-1.603C18.683 15.35 21 12.993 21 10c0-1.347-.484-2.585-1.287-3.622c.21-.82.191-1.646.111-2.28c-.071-.568-.17-1.312-.57-1.756c-.595-.659-1.58-.271-2.28-.032a9 9 0 0 0-2.125 1.045A11.4 11.4 0 0 0 12 3c-.994 0-1.953.125-2.851.356a9 9 0 0 0-2.125-1.045c-.7-.24-1.686-.628-2.281.031c-.408.452-.493 1.137-.566 1.719l-.005.038c-.08.635-.098 1.462.112 2.283C3.484 7.418 3 8.654 3 10c0 2.992 2.317 5.35 5.334 6.397A4 4 0 0 0 8 17.98l-.168.034c-.717.099-1.176.01-1.488-.122c-.76-.322-1.152-1.133-1.63-1.753c-.298-.385-.732-.866-1.398-1.088a1 1 0 0 0-.632 1.898c.558.186.944 1.142 1.298 1.566c.373.448.869.916 1.58 1.218c.682.29 1.483.393 2.438.276V21a1 1 0 0 0 2 0v-3c0-.574.24-1.09.629-1.456c.607-.572.297-1.568-.495-1.726C6.969 14.187 5 12.114 5 10c0-.958.385-1.881 1.108-2.684c.283-.314.357-.756.207-1.14"
+              />
+            </g>
+          </svg>
+        </a>
+      </header>
+      <p>A Spicetify extension to integrate your Jellyfin music library into Spotify</p>
 
       <hr />
-      <h3>Downloads</h3>
-      <a href="stable/jellyfin-spicetify.js" download class="button">Stable</a>
+      <h3>Features</h3>
+      <ul>
+        <li>Stream music from Jellyfin instead of Spotify</li>
+        <li>Play tracks that exist on Jellyfin but aren't available on Spotify</li>
+        <li>Easily toggle between Jellyfin and Spotify audio</li>
+      </ul>
+
+      <hr />
+      <h3 style="margin-bottom: 1rem">Downloads</h3>
+      <a href="stable/jellyfin-spicetify.js" download class="button" style="margin-right: 2px">Stable</a>
       <a href="unstable/jellyfin-spicetify.js" download class="button secondary">Beta (latest commit)</a>
       <p class="marketplace-note">Also available on the Spicetify Marketplace!</p>
 
-      <hr style="margin-top: 2rem" />
+      <hr />
+      <div class="help-container">
+        <div class="help-text-block">
+          <h3>Need help?</h3>
+          <p>Found a bug or want to request a feature?</p>
+        </div>
+
+        <a href="https://github.com/trafficlunar/jellyfin-spicetify/issues" class="button secondary">Report an Issue</a>
+      </div>
+
+      <hr />
       <footer>
-        <a href="https://trafficlunar.net" id="author">made by trafficlunar!</a>
+        <a href="https://trafficlunar.net" id="author">Made by <b>trafficlunar</b></a>
         <a href="https://ko-fi.com/trafficlunar" class="button">Support on Ko-fi</a>
       </footer>
     </main>
